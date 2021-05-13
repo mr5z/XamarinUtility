@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XamarinUtility\XamarinUtility.csproj" />
+    <PackageReference Include="XamarinUtility" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
