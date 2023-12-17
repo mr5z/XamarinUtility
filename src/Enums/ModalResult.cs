@@ -1,9 +1,8 @@
-﻿namespace XamarinUtility.Enums
+﻿namespace XamarinUtility.Enums;
+
+public enum ModalResult
 {
-    public enum ModalResult
-    {
-        Cancelled,
-        PositiveAction,
-        NegativeAction
-    }
+    Cancelled,
+    PositiveAction,
+    NegativeAction
 }

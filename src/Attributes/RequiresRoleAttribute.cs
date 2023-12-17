@@ -1,14 +1,8 @@
 ﻿using System;
 
-namespace XamarinUtility.Attributes
-{
-    public class RequiresRoleAttribute : Attribute
-    {
-        public RequiresRoleAttribute(string roles)
-        {
-            Roles = roles;
-        }
+namespace XamarinUtility.Attributes;
 
-        public string Roles { get; }
-    }
+public class RequiresRoleAttribute(string roles) : Attribute
+{
+    public string Roles { get; } = roles;
 }

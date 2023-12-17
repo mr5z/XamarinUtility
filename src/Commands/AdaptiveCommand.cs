@@ -2,148 +2,147 @@
 using System;
 using System.Threading.Tasks;
 
-namespace XamarinUtility.Commands
+namespace XamarinUtility.Commands;
+
+public class AdaptiveCommand : DelegateCommand
 {
-    public class AdaptiveCommand : DelegateCommand
+    private const double DefaultInvocationDelay = 0.7;
+
+    public double InvocationDelayInSeconds { get; set; }
+
+    private DateTime lastInvokeTime = DateTime.MinValue;
+    private readonly Func<bool>? canExecute;
+    private readonly Func<Task>? task;
+
+    public AdaptiveCommand(
+        Action executeAction,
+        double invocationDelayInSeconds = DefaultInvocationDelay)
+        : base(executeAction)
     {
-        private const double DefaultInvocationDelay = 0.7;
-
-        public double InvocationDelayInSeconds { get; set; }
-
-        private DateTime lastInvokeTime = DateTime.MinValue;
-        private readonly Func<bool>? canExecute;
-        private readonly Func<Task>? task;
-
-        public AdaptiveCommand(
-            Action executeAction,
-            double invocationDelayInSeconds = DefaultInvocationDelay)
-            : base(executeAction)
-        {
-            InvocationDelayInSeconds = invocationDelayInSeconds;
-        }
-
-        public AdaptiveCommand(
-            Func<Task> task,
-            double invocationDelayInSeconds = DefaultInvocationDelay)
-            : base(() => { })
-        {
-            this.task = task;
-            InvocationDelayInSeconds = invocationDelayInSeconds;
-        }
-
-        public AdaptiveCommand(
-            Action executeAction,
-            Func<bool> canExecute,
-            double invocationDelayInSeconds = DefaultInvocationDelay)
-            : base(executeAction, canExecute)
-        {
-            this.canExecute = canExecute;
-            InvocationDelayInSeconds = invocationDelayInSeconds;
-        }
-
-        protected override async void Execute(object parameter)
-        {
-            if (DateTime.Now - lastInvokeTime < TimeSpan.FromSeconds(InvocationDelayInSeconds))
-                return;
-
-            if (IsActive || (canExecute != null && !canExecute()))
-                return;
-
-            IsActive = true;
-            if (task != null)
-            {
-                await task();
-                IsActive = false;
-            }
-            else
-            {
-                base.Execute(parameter);
-                IsActive = false;
-            }
-
-            lastInvokeTime = DateTime.Now;
-        }
-
-        protected override void OnIsActiveChanged()
-        {
-            base.OnIsActiveChanged();
-            RaiseCanExecuteChanged();
-        }
-
-        protected override bool CanExecute(object parameter)
-        {
-            return !IsActive;
-        }
+        InvocationDelayInSeconds = invocationDelayInSeconds;
     }
 
-    public class AdaptiveCommand<T> : DelegateCommand<T>
+    public AdaptiveCommand(
+        Func<Task> task,
+        double invocationDelayInSeconds = DefaultInvocationDelay)
+        : base(() => { })
     {
-        private const double DefaultInvocationDelay = 0.7;
+        this.task = task;
+        InvocationDelayInSeconds = invocationDelayInSeconds;
+    }
 
-        public double InvocationDelayInSeconds { get; set; }
+    public AdaptiveCommand(
+        Action executeAction,
+        Func<bool> canExecute,
+        double invocationDelayInSeconds = DefaultInvocationDelay)
+        : base(executeAction, canExecute)
+    {
+        this.canExecute = canExecute;
+        InvocationDelayInSeconds = invocationDelayInSeconds;
+    }
 
-        private DateTime lastInvokeTime = DateTime.MinValue;
-        private readonly Func<T, bool>? canExecute;
-        private readonly Func<T, Task>? task;
+    protected override async void Execute(object parameter)
+    {
+        if (DateTime.Now - lastInvokeTime < TimeSpan.FromSeconds(InvocationDelayInSeconds))
+            return;
 
-        public AdaptiveCommand(
-            Action<T> executeAction,
-            double invocationDelayInSeconds = DefaultInvocationDelay)
-            : base(executeAction)
+        if (IsActive || (canExecute != null && !canExecute()))
+            return;
+
+        IsActive = true;
+        if (task != null)
         {
-            InvocationDelayInSeconds = invocationDelayInSeconds;
+            await task();
+            IsActive = false;
+        }
+        else
+        {
+            base.Execute(parameter);
+            IsActive = false;
         }
 
-        public AdaptiveCommand(
-            Func<T, Task> task,
-            double invocationDelayInSeconds = DefaultInvocationDelay)
-            : base(t => { })
+        lastInvokeTime = DateTime.Now;
+    }
+
+    protected override void OnIsActiveChanged()
+    {
+        base.OnIsActiveChanged();
+        RaiseCanExecuteChanged();
+    }
+
+    protected override bool CanExecute(object parameter)
+    {
+        return !IsActive;
+    }
+}
+
+public class AdaptiveCommand<T> : DelegateCommand<T>
+{
+    private const double DefaultInvocationDelay = 0.7;
+
+    public double InvocationDelayInSeconds { get; set; }
+
+    private DateTime lastInvokeTime = DateTime.MinValue;
+    private readonly Func<T, bool>? canExecute;
+    private readonly Func<T, Task>? task;
+
+    public AdaptiveCommand(
+        Action<T> executeAction,
+        double invocationDelayInSeconds = DefaultInvocationDelay)
+        : base(executeAction)
+    {
+        InvocationDelayInSeconds = invocationDelayInSeconds;
+    }
+
+    public AdaptiveCommand(
+        Func<T, Task> task,
+        double invocationDelayInSeconds = DefaultInvocationDelay)
+        : base(t => { })
+    {
+        this.task = task;
+        InvocationDelayInSeconds = invocationDelayInSeconds;
+    }
+
+    public AdaptiveCommand(
+        Action<T> executeAction,
+        Func<T, bool> canExecute,
+        double invocationDelayInSeconds = DefaultInvocationDelay)
+        : base(executeAction, canExecute)
+    {
+        this.canExecute = canExecute;
+        InvocationDelayInSeconds = invocationDelayInSeconds;
+    }
+
+    protected override void Execute(object parameter)
+    {
+        if (DateTime.Now - lastInvokeTime < TimeSpan.FromSeconds(InvocationDelayInSeconds))
+            return;
+
+        if (IsActive || (canExecute != null && !canExecute((T)parameter)))
+            return;
+
+        IsActive = true;
+        if (task != null)
         {
-            this.task = task;
-            InvocationDelayInSeconds = invocationDelayInSeconds;
+            _ = task((T)parameter).ContinueWith(t => IsActive = false);
+        }
+        else
+        {
+            base.Execute(parameter);
+            IsActive = false;
         }
 
-        public AdaptiveCommand(
-            Action<T> executeAction,
-            Func<T, bool> canExecute,
-            double invocationDelayInSeconds = DefaultInvocationDelay)
-            : base(executeAction, canExecute)
-        {
-            this.canExecute = canExecute;
-            InvocationDelayInSeconds = invocationDelayInSeconds;
-        }
+        lastInvokeTime = DateTime.Now;
+    }
 
-        protected override void Execute(object parameter)
-        {
-            if (DateTime.Now - lastInvokeTime < TimeSpan.FromSeconds(InvocationDelayInSeconds))
-                return;
+    protected override void OnIsActiveChanged()
+    {
+        base.OnIsActiveChanged();
+        RaiseCanExecuteChanged();
+    }
 
-            if (IsActive || (canExecute != null && !canExecute((T)parameter)))
-                return;
-
-            IsActive = true;
-            if (task != null)
-            {
-                _ = task((T)parameter).ContinueWith(t => IsActive = false);
-            }
-            else
-            {
-                base.Execute(parameter);
-                IsActive = false;
-            }
-
-            lastInvokeTime = DateTime.Now;
-        }
-
-        protected override void OnIsActiveChanged()
-        {
-            base.OnIsActiveChanged();
-            RaiseCanExecuteChanged();
-        }
-
-        protected override bool CanExecute(object parameter)
-        {
-            return !IsActive;
-        }
+    protected override bool CanExecute(object parameter)
+    {
+        return !IsActive;
     }
 }

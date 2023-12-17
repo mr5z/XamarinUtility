@@ -1,15 +1,9 @@
 ﻿using System;
 using XamarinUtility.Extensions.Navigations;
 
-namespace XamarinUtility.Exceptions
-{
-    class NavigationValidationException : Exception
-    {
-        public NavigationValidationException(ViewModelMetadata pageInfo, string? message = null) : base(message)
-        {
-            PageInfo = pageInfo;
-        }
+namespace XamarinUtility.Exceptions;
 
-        public ViewModelMetadata PageInfo { get; }
-    }
+class NavigationValidationException(ViewModelMetadata pageInfo, string? message = null) : Exception(message)
+{
+    public ViewModelMetadata PageInfo { get; } = pageInfo;
 }

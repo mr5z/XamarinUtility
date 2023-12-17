@@ -1,8 +1,7 @@
-﻿namespace XamarinUtility.ViewModels
+﻿namespace XamarinUtility.ViewModels;
+
+public interface IDismissableModal
 {
-    public interface IDismissableModal
-    {
-        bool DismissOnBackgroundClick();
-        bool DismissOnBackButtonPress();
-    }
+    bool DismissOnBackgroundClick();
+    bool DismissOnBackButtonPress();
 }

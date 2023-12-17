@@ -1,15 +1,9 @@
 ﻿using System;
 
-namespace XamarinUtility.Attributes
-{
-    [AttributeUsage(AttributeTargets.Class)]
-    public class RequiresAuthenticationAttribute : Attribute
-    {
-        public RequiresAuthenticationAttribute(bool isRequired = true)
-        {
-            IsRequired = isRequired;
-        }
+namespace XamarinUtility.Attributes;
 
-        public bool IsRequired { get; }
-    }
+[AttributeUsage(AttributeTargets.Class)]
+public class RequiresAuthenticationAttribute(bool isRequired = true) : Attribute
+{
+    public bool IsRequired { get; } = isRequired;
 }

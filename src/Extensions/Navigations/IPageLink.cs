@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace XamarinUtility.Extensions.Navigations
+namespace XamarinUtility.Extensions.Navigations;
+
+public interface IPageLink
 {
-    public interface IPageLink
-    {
-        string FullPath { get; }
-        IEnumerable<Type?> PageTypes { get; }
-        IPageLink AppendSegment(string pageName, object? parameter = null);
-        IPageLink AppendSegment(string pageName, Type pageType, object? parameter = null);
-    }
+    string FullPath { get; }
+    IEnumerable<Type?> PageTypes { get; }
+    IPageLink AppendSegment(string pageName, object? parameter = null);
+    IPageLink AppendSegment(string pageName, Type pageType, object? parameter = null);
 }
